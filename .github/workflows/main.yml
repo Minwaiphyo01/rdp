@@ -1,0 +1,150 @@
+src/app/account/orders/[id]/page.tsx(321,95): error TS2339: Property 'multiSubToken' does not exist on type 'OrderDetail'.
+src/app/account/vpn-keys/page.tsx(139,105): error TS2339: Property 'multiSubToken' does not exist on type 'VpnOrder'.
+src/app/api/admin/analytics/route.ts(393,44): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/api/admin/analytics/route.ts(400,48): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/api/admin/support/[id]/route.ts(94,11): error TS2353: Object literal may only specify known properties, and 'link' does not exist in type '{ user: string | ObjectId; type: NotificationType; title: string; message: string; orderId?: string | ObjectId | undefined; }'.
+src/app/api/admin/support/[id]/route.ts(125,9): error TS2353: Object literal may only specify known properties, and 'link' does not exist in type '{ user: string | ObjectId; type: NotificationType; title: string; message: string; orderId?: string | ObjectId | undefined; }'.
+src/app/api/stripe/checkout/route.ts(96,28): error TS2339: Property 'url' does not exist on type 'StripeCheckoutSession'.
+src/app/api/stripe/webhook/route.ts(76,9): error TS2322: Type 'string' is not assignable to type 'ObjectId'.
+src/app/api/stripe/webhook/route.ts(103,9): error TS2353: Object literal may only specify known properties, and 'link' does not exist in type '{ user: string | ObjectId; type: NotificationType; title: string; message: string; orderId?: string | ObjectId | undefined; }'.
+src/app/api/vpn/sub/[token]/route.ts(38,18): error TS2339: Property 'expiryTime' does not exist on type 'FlattenMaps<IVpnKeyItem>'.
+src/app/api/vpn/sub/[token]/route.ts(38,54): error TS2339: Property 'expiryTime' does not exist on type 'FlattenMaps<IVpnKeyItem>'.
+src/components/AiChatWidget.tsx(95,60): error TS1501: This regular expression flag is only available when targeting 'es2018' or later.
+src/lib/order-actions.ts(23,41): error TS2305: Module '"@/lib/xui"' has no exported member 'VpnProvisionResult'.
+src/lib/telegram-bot/handlers/free-test.ts(119,25): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/free-test.ts(129,23): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/free-test.ts(152,27): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/free-test.ts(160,27): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/free-test.ts(176,27): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/free-test.ts(207,25): error TS2304: Cannot find name 'messageId'.
+src/lib/telegram-bot/handlers/shop.ts(73,12): error TS2554: Expected 2-3 arguments, but got 1.
+src/lib/telegram-bot/handlers/vps.ts(2,10): error TS2614: Module '"@/lib/mongodb"' has no exported member 'connectDB'. Did you mean to use 'import connectDB from "@/lib/mongodb"' instead?
+src/lib/telegram-bot/handlers/vps.ts(47,13): error TS2339: Property 'answerCbQuery' does not exist on type 'BotContext'.
+src/lib/telegram-bot/handlers/vps.ts(47,38): error TS2339: Property 'answerCbQuery' does not exist on type 'BotContext'.
+src/lib/telegram-bot/handlers/vps.ts(51,11): error TS2339: Property 'session' does not exist on type 'BotContext'.
+src/lib/telegram-bot/handlers/vps.ts(52,9): error TS2339: Property 'session' does not exist on type 'BotContext'.
+src/lib/telegram-bot/handlers/vps.ts(85,69): error TS2339: Property 'fromUser' does not exist on type 'BotContext'.
+src/lib/telegram-bot/index.ts(270,13): error TS2554: Expected 2-3 arguments, but got 1.
+src/lib/telegram-bot/index.ts(283,15): error TS2554: Expected 2-3 arguments, but got 1.
+src/lib/telegram-bot/index.ts(474,9): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/lib/telegram-bot/messages.ts(9,22): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/lib/telegram-bot/messages.ts(9,28): error TS7006: Parameter 'lang' implicitly has an 'any' type.
+src/lib/telegram-bot/messages.ts(13,19): error TS7006: Parameter 'lang' implicitly has an 'any' type.
+src/lib/telegram-bot/messages.ts(17,22): error TS7006: Parameter 'lang' implicitly has an 'any' type.
+
+
+
+
+name: RDP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  secure-rdp:
+    runs-on: windows-latest
+    timeout-minutes: 3600
+
+    steps:
+      - name: Configure Core RDP Settings
+        run: |
+          # Enable Remote Desktop and disable Network Level Authentication (if needed)
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
+                             -Name "fDenyTSConnections" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
+                             -Name "UserAuthentication" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
+                             -Name "SecurityLayer" -Value 0 -Force
+
+          # Remove any existing rule with the same name to avoid duplication
+          netsh advfirewall firewall delete rule name="RDP-Tailscale"
+          
+          # For testing, allow any incoming connection on port 3389
+          netsh advfirewall firewall add rule name="RDP-Tailscale" `
+            dir=in action=allow protocol=TCP localport=3389
+
+          # (Optional) Restart the Remote Desktop service to ensure changes take effect
+          Restart-Service -Name TermService -Force
+
+      - name: Create RDP User with Secure Password
+        run: |
+          Add-Type -AssemblyName System.Security
+          $charSet = @{
+              Upper   = [char[]](65..90)      # A-Z
+              Lower   = [char[]](97..122)     # a-z
+              Number  = [char[]](48..57)      # 0-9
+              Special = ([char[]](33..47) + [char[]](58..64) +
+                         [char[]](91..96) + [char[]](123..126)) # Special characters
+          }
+          $rawPassword = @()$rawPassword += $charSet.Upper | Get-Random -Count 4
+          $rawPassword += $charSet.Lower | Get-Random -Count 4
+          $rawPassword += $charSet.Number | Get-Random -Count 4
+          $rawPassword += $charSet.Special | Get-Random -Count 4
+          $password = -join ($rawPassword | Sort-Object { Get-Random })
+          $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name "RDP" -Password $securePass -AccountNeverExpires
+          Add-LocalGroupMember -Group "Administrators" -Member "RDP"
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP"
+          
+          echo "RDP_CREDS=User: RDP | Password: $password" >> $env:GITHUB_ENV
+          
+          if (-not (Get-LocalUser -Name "RDP")) {
+              Write-Error "User creation failed"
+              exit 1
+          }
+
+      - name: Install Tailscale
+        run: |
+          $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
+          $installerPath = "$env:TEMP\tailscale.msi"
+          
+          Invoke-WebRequest -Uri $tsUrl -OutFile $installerPath
+          Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
+          Remove-Item $installerPath -Force
+
+      - name: Establish Tailscale Connection
+        run: |
+          # Bring up Tailscale with the provided auth key and set a unique hostname
+          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=gh-runner-$env:GITHUB_RUN_ID
+          
+          # Wait for Tailscale to assign an IP
+          $tsIP = $null
+          $retries = 0
+          while (-not $tsIP -and $retries -lt 10) {
+              $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
+              Start-Sleep -Seconds 5
+              $retries++
+          }
+          
+          if (-not $tsIP) {
+              Write-Error "Tailscale IP not assigned. Exiting." 
+              exit 1
+          }
+          echo "TAILSCALE_IP=$tsIP" >> $env:GITHUB_ENV
+      
+      - name: Verify RDP Accessibility
+        run: |
+          Write-Host "Tailscale IP: $env:TAILSCALE_IP"
+          
+          # Test connectivity using Test-NetConnection against the Tailscale IP on port 3389
+          $testResult = Test-NetConnection -ComputerName $env:TAILSCALE_IP -Port 3389
+          if (-not $testResult.TcpTestSucceeded) {
+              Write-Error "TCP connection to RDP port 3389 failed"
+              exit 1
+          }
+          Write-Host "TCP connectivity successful!"
+
+      - name: Maintain Connection
+        run: |
+          Write-Host "`n=== RDP ACCESS ==="
+          Write-Host "Address: $env:TAILSCALE_IP"
+          Write-Host "Username: RDP"
+          Write-Host "Password: $(echo $env:RDP_CREDS)"
+          Write-Host "==================`n"
+          
+          # Keep runner active indefinitely (or until manually cancelled)
+          while ($true) {
+              Write-Host "[$(Get-Date)] RDP Active - Use Ctrl+C in workflow to terminate"
+              Start-Sleep -Seconds 300
+          }
